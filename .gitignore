@@ -1,0 +1,17 @@
+# Claude
+.claude/
+
+# SSH keys
+ssh/id_*
+!ssh/id_*.pub
+
+# Local environment overrides
+.env
+.env.local
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# PowerShell
+*.ps1xml
