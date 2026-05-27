@@ -10,6 +10,12 @@ Host pve
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
+Host gateway
+   HostName 192.168.0.211
+   User root
+   Port 22
+   IdentityFile ~/.ssh/id_ed25519
+
 Host nas
    HostName 192.168.0.212
    User joel
