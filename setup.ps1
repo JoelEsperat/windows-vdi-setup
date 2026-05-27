@@ -98,11 +98,15 @@ if ((Get-Service sshd).Status -ne "Running") {
     Ok "sshd already running"
 }
 
-# Firewall rule (capability install usually creates it, but verify)
-if (-not (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) {
+# Firewall rule — profile must be Any so the rule applies regardless of how Windows
+# classifies the active network (Private/Public/Domain).
+if (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue) {
+    Set-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -Profile Any
+    Ok "Firewall rule for TCP 22 updated (Profile: Any)"
+} else {
     New-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -DisplayName "OpenSSH Server (sshd)" `
-        -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 | Out-Null
-    Ok "Firewall rule for TCP 22 created"
+        -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -Profile Any | Out-Null
+    Ok "Firewall rule for TCP 22 created (Profile: Any)"
 }
 
 # Default shell: Windows PowerShell
