@@ -21,3 +21,15 @@ Host nas
    User joel
    Port 22
    IdentityFile ~/.ssh/id_ed25519
+
+Host apps
+   HostName 192.168.0.213
+   User root
+   Port 22
+   IdentityFile ~/.ssh/id_ed25519
+
+Host server
+   HostName 192.168.0.220
+   User joel
+   Port 22
+   IdentityFile ~/.ssh/id_ed25519

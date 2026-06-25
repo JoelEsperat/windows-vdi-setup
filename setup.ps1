@@ -11,6 +11,8 @@
 
 $ErrorActionPreference = 'Stop'
 $RepoRoot = $PSScriptRoot
+$TargetUser = 'Joel'
+$TargetProfilePath = "C:\Users\$TargetUser"
 
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Ok($msg)   { Write-Host "    OK: $msg" -ForegroundColor Green }
@@ -41,42 +43,71 @@ Ok "winget packages in sync"
 
 # --- 3. Configuring Git -------------------------------------------------------
 Step "Configuring Git"
-$gitDest = "$env:USERPROFILE\.gitconfig"
+
+if (-not (Test-Path $TargetProfilePath)) {
+    throw "Target user profile '$TargetUser' was not found. Ensure $TargetProfilePath exists before running setup."
+}
+
+$gitDest = "$TargetProfilePath\.gitconfig"
 Copy-Item "$RepoRoot\git\gitconfig" $gitDest -Force
-Ok $gitDest
+Ok "$gitDest"
 
 # --- 4. Configuring OpenSSH Client -------------------------------------------------------
 Step "Configuring OpenSSH Client"
-$sshDir  = "$env:USERPROFILE\.ssh"
-$sshCfg  = "$sshDir\config"
-$keyFile = "$sshDir\id_ed25519"
-New-Item -ItemType Directory -Force $sshDir | Out-Null
 
-Copy-Item "$RepoRoot\ssh\config" $sshCfg -Force
-Ok $sshCfg
-
-# Pull the private key from Key Vault; write only if local differs from vault
+# Pull the private key from Key Vault once, avoiding multiple API calls
 $b64 = az keyvault secret show --vault-name kv-lab-f7d470 --name ssh-id-ed25519 --query value -o tsv --only-show-errors
+$vaultBytes = $null
 if ($LASTEXITCODE -ne 0) {
     Warn "Key Vault fetch failed -- check your subscription and Secrets User role assignment"
 } else {
-    $vaultBytes = [Convert]::FromBase64String($b64)
+    try {
+        $vaultBytes = [Convert]::FromBase64String($b64)
+    } catch {
+        Warn "Key Vault secret ssh-id-ed25519 is not valid base64. Skipping private key update."
+        $vaultBytes = $null
+    }
+}
+
+$sshDir  = "$TargetProfilePath\.ssh"
+$sshCfg  = "$sshDir\config"
+$keyFile = "$sshDir\id_ed25519"
+
+New-Item -ItemType Directory -Force $sshDir | Out-Null
+Copy-Item "$RepoRoot\ssh\config" $sshCfg -Force
+Ok "$sshCfg"
+
+if ($vaultBytes) {
     $needsWrite = $true
     if (Test-Path $keyFile) {
-        $localBytes = [System.IO.File]::ReadAllBytes($keyFile)
-        if (($localBytes.Length -eq $vaultBytes.Length) -and
-            (-not (Compare-Object $localBytes $vaultBytes -SyncWindow 0))) {
-            $needsWrite = $false
+        try {
+            $localBytes = [System.IO.File]::ReadAllBytes($keyFile)
+            if (($localBytes.Length -eq $vaultBytes.Length) -and
+                (-not (Compare-Object $localBytes $vaultBytes -SyncWindow 0))) {
+                $needsWrite = $false
+            }
+        } catch {
+            # If we cannot read the file due to current ACL restrictions, overwrite it
+            $needsWrite = $true
         }
     }
+
     if ($needsWrite) {
-        [System.IO.File]::WriteAllBytes($keyFile, $vaultBytes)
-        Ok "$keyFile (updated from Key Vault)"
+        try {
+            [System.IO.File]::WriteAllBytes($keyFile, $vaultBytes)
+            Ok "$keyFile (updated from Key Vault)"
+        } catch {
+            Warn "Failed to write $keyFile for ${TargetUser}: $_"
+        }
     } else {
         Ok "$keyFile (already in sync)"
     }
+
     # Always reassert ACL -- OpenSSH refuses keys readable by anyone but the owner
-    icacls $keyFile /inheritance:r /grant:r "${env:USERNAME}:R" | Out-Null
+    # We grant the target user Read-only access, and full control to SYSTEM and Administrators
+    if (Test-Path $keyFile) {
+        icacls "$keyFile" /inheritance:r /grant:r "$TargetUser:R" /grant:r "SYSTEM:F" /grant:r "Administrators:F" | Out-Null
+    }
 }
 
 # --- 5. OpenSSH Server --------------------------------------------------------
@@ -118,11 +149,18 @@ Ok "Default SSH shell: $defaultShell"
 # (Windows OpenSSH ignores ~/.ssh/authorized_keys for accounts in the Administrators group)
 $ghUser = "JoelEsperat"
 $ghKeys = (Invoke-RestMethod "https://github.com/$ghUser.keys") -split "`n" |
-          Where-Object { $_.Trim() -ne "" }
+          ForEach-Object { $_.Trim() } |
+          Where-Object { $_ -match '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp(256|384|521))\s+' }
 $adminKeysFile = "C:\ProgramData\ssh\administrators_authorized_keys"
-Set-Content -Path $adminKeysFile -Value $ghKeys -Encoding ASCII
-icacls $adminKeysFile /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F" | Out-Null
-Ok "$adminKeysFile ($($ghKeys.Count) keys from github.com/$ghUser)"
+if ($ghKeys.Count -eq 0) {
+    Warn "No valid SSH keys returned from github.com/$ghUser. Leaving $adminKeysFile unchanged."
+} else {
+    $tmpKeysFile = "$adminKeysFile.new"
+    Set-Content -Path $tmpKeysFile -Value $ghKeys -Encoding ASCII
+    Move-Item -Path $tmpKeysFile -Destination $adminKeysFile -Force
+    icacls $adminKeysFile /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F" | Out-Null
+    Ok "$adminKeysFile ($($ghKeys.Count) keys from github.com/$ghUser)"
+}
 
 # --- 6. Remote Desktop --------------------------------------------------------
 Step "Enabling Remote Desktop"

@@ -7,12 +7,6 @@
 			"Packages" : 
 			[
 				{
-					"PackageIdentifier" : "Anthropic.Claude"
-				},
-				{
-					"PackageIdentifier" : "Anthropic.ClaudeCode"
-				},
-				{
 					"PackageIdentifier" : "Git.Git"
 				},
 				{
@@ -68,6 +62,9 @@
 				},
 				{
 					"PackageIdentifier" : "Microsoft.WindowsTerminal"
+				},
+				{
+					"PackageIdentifier" : "Google.Antigravity"
 				}
 			],
 			"SourceDetails" : 

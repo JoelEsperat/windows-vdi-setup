@@ -5,11 +5,14 @@ Personal Windows VDI configuration as code. Installs apps, configures Git and SS
 ## What it does
 
 - **`setup.ps1`** — entry point; idempotent, re-run any time to update apps or reapply config
+	- Configures only the `Joel` profile
 - **`apps/packages.json`** — winget package list
 - **`git/gitconfig`** — global Git configuration (`~/.gitconfig`)
 - **`ssh/config`** — SSH host aliases (`~/.ssh/config`)
 
 SSH private key is pulled from Azure Key Vault (`kv-lab-f7d470`) and written to `~/.ssh/id_ed25519`.
+
+This script is intentionally hardcoded for a single-user VDI (`Joel`).
 
 ## Usage
 
@@ -20,12 +23,14 @@ C:\Projects\windows-config\setup.ps1
 ```
 
 > Run as Administrator. Requires an active Azure login — the script will prompt `az login` if needed.
+>
+> The script expects `C:\Users\Joel` to exist. To target a different user, edit `$TargetUser` in `setup.ps1`.
 
 ## Apps installed
 
 | Type | Apps |
 |------|------|
-| Apps | Claude, Claude Code, PowerShell, VS Code |
+| Apps | PowerShell, VS Code, Antigravity |
 | CLI | Azure CLI, Git, GitHub CLI |
 | Runtimes | Python |
 
