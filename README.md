@@ -1,6 +1,6 @@
 # windows-config
 
-Personal Windows VDI configuration as code. Installs apps, configures Git and SSH, and retrieves credentials from Azure Key Vault.
+Personal Windows VDI configuration as code. Installs apps, configures Git and SSH, and uses a locally managed SSH key.
 
 ## What it does
 
@@ -10,7 +10,7 @@ Personal Windows VDI configuration as code. Installs apps, configures Git and SS
 - **`git/gitconfig`** — global Git configuration (`~/.gitconfig`)
 - **`ssh/config`** — SSH host aliases (`~/.ssh/config`)
 
-SSH private key is pulled from Azure Key Vault (`kv-lab-f7d470`) and written to `~/.ssh/id_ed25519`.
+SSH private key is managed manually and left in place at `~/.ssh/id_ed25519`.
 
 This script is intentionally hardcoded for a single-user VDI (`Joel`).
 
@@ -22,9 +22,11 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 C:\Projects\windows-config\setup.ps1
 ```
 
-> Run as Administrator. Requires an active Azure login — the script will prompt `az login` if needed.
+> Run as Administrator.
 >
 > The script expects `C:\Users\Joel` to exist. To target a different user, edit `$TargetUser` in `setup.ps1`.
+>
+> Keep your private key in `C:\Users\Joel\.ssh\id_ed25519` and your public key in `C:\Users\Joel\.ssh\id_ed25519.pub`; the script will preserve them.
 
 ## Apps installed
 

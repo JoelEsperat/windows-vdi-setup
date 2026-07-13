@@ -7,13 +7,25 @@
 			"Packages" : 
 			[
 				{
+					"PackageIdentifier" : "Gyan.FFmpeg"
+				},
+				{
 					"PackageIdentifier" : "Git.Git"
+				},
+				{
+					"PackageIdentifier" : "GitHub.cli"
+				},
+				{
+					"PackageIdentifier" : "Google.Antigravity"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.AppInstaller"
 				},
 				{
 					"PackageIdentifier" : "Microsoft.AzureCLI"
 				},
 				{
-					"PackageIdentifier" : "GitHub.cli"
+					"PackageIdentifier" : "Microsoft.Edit"
 				},
 				{
 					"PackageIdentifier" : "Microsoft.Edge"
@@ -22,49 +34,40 @@
 					"PackageIdentifier" : "Microsoft.EdgeWebView2Runtime"
 				},
 				{
-					"PackageIdentifier" : "RedHat.VirtIO"
-				},
-				{
-					"PackageIdentifier" : "Python.Launcher"
-				},
-				{
-					"PackageIdentifier" : "Microsoft.Edit"
-				},
-				{
-					"PackageIdentifier" : "Python.Python.3.14"
-				},
-				{
-					"PackageIdentifier" : "Microsoft.VisualStudioCode"
-				},
-				{
-					"PackageIdentifier" : "Gyan.FFmpeg"
-				},
-				{
-					"PackageIdentifier" : "Microsoft.AppInstaller"
-				},
-				{
 					"PackageIdentifier" : "Microsoft.PowerShell"
 				},
 				{
 					"PackageIdentifier" : "Microsoft.UI.Xaml.2.8"
 				},
 				{
+					"PackageIdentifier" : "Microsoft.VCLibs.14"
+				},
+				{
 					"PackageIdentifier" : "Microsoft.VCLibs.Desktop.14"
 				},
 				{
-					"PackageIdentifier" : "Microsoft.VCLibs.14"
+					"PackageIdentifier" : "Microsoft.VisualStudioCode"
 				},
 				{
 					"PackageIdentifier" : "Microsoft.WindowsAppRuntime.1.8"
 				},
 				{
-					"PackageIdentifier" : "VideoLAN.VLC"
-				},
-				{
 					"PackageIdentifier" : "Microsoft.WindowsTerminal"
 				},
+								{
+					"PackageIdentifier" : "OpenAI.Codex"
+				},
 				{
-					"PackageIdentifier" : "Google.Antigravity"
+					"PackageIdentifier" : "Python.Launcher"
+				},
+				{
+					"PackageIdentifier" : "Python.Python.3.14"
+				},
+				{
+					"PackageIdentifier" : "RedHat.VirtIO"
+				},
+				{
+					"PackageIdentifier" : "VideoLAN.VLC"
 				}
 			],
 			"SourceDetails" : 

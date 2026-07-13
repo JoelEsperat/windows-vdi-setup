@@ -10,7 +10,13 @@ Host pve
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
-Host gateway
+Host pbs
+   HostName 192.168.1.10
+   User root
+   Port 22
+   IdentityFile ~/.ssh/id_ed25519
+
+Host gw
    HostName 192.168.0.211
    User root
    Port 22
@@ -28,7 +34,7 @@ Host apps
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
-Host server
+Host lab
    HostName 192.168.0.220
    User joel
    Port 22
