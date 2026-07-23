@@ -13,10 +13,57 @@ $ErrorActionPreference = 'Stop'
 $RepoRoot = $PSScriptRoot
 $TargetUser = 'Joel'
 $TargetProfilePath = "C:\Users\$TargetUser"
+$StaticRoutes = @(
+    @{ DestinationPrefix = '10.10.0.0/24'; NextHop = '192.168.0.200' },
+    @{ DestinationPrefix = '10.10.10.0/24'; NextHop = '192.168.0.210' }
+)
 
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Ok($msg)   { Write-Host "    OK: $msg" -ForegroundColor Green }
 function Warn($msg) { Write-Host "    WARN: $msg" -ForegroundColor Yellow }
+
+function Ensure-StaticRoute {
+    param(
+        [Parameter(Mandatory)]
+        [string]$DestinationPrefix,
+
+        [Parameter(Mandatory)]
+        [string]$NextHop
+    )
+
+    # Convert DestinationPrefix CIDR to destination network and mask
+    $parts = $DestinationPrefix -split '/'
+    $destNetwork = $parts[0]
+    $cidr = [int]$parts[1]
+
+    # Convert CIDR prefix length to subnet mask (e.g. 24 -> 255.255.255.0)
+    $maskVal = [uint32]::MaxValue
+    if ($cidr -lt 32) {
+        $maskVal = $maskVal -shl (32 - $cidr)
+    }
+    $bytes = [System.BitConverter]::GetBytes($maskVal)
+    [System.Array]::Reverse($bytes)
+    $subnetMask = $bytes -join '.'
+
+    # Check existing routes in the PersistentStore
+    $existingRoutes = @(Get-NetRoute -DestinationPrefix $DestinationPrefix -PolicyStore PersistentStore -ErrorAction SilentlyContinue)
+    if ($existingRoutes.Count -gt 0) {
+        $matchingRoute = $existingRoutes | Where-Object { $_.NextHop -eq $NextHop }
+        if ($matchingRoute) {
+            Ok "Route $DestinationPrefix via $NextHop already exists in persistent store"
+            return
+        }
+
+        # Remove existing persistent routes for this destination prefix
+        foreach ($route in $existingRoutes) {
+            route.exe delete $destNetwork | Out-Null
+        }
+    }
+
+    # Add the persistent route using route.exe
+    route.exe add $destNetwork mask $subnetMask $NextHop -p | Out-Null
+    Ok "Route $DestinationPrefix via $NextHop configured"
+}
 
 # --- 1. Apps ------------------------------------------------------------------
 Step "Installing/updating apps via winget"
@@ -73,6 +120,12 @@ Set-ItemProperty -Path $tsRoot -Name "fDenyTSConnections" -Value 0
 Set-ItemProperty -Path "$tsRoot\WinStations\RDP-Tcp" -Name "UserAuthentication" -Value 1
 Enable-NetFirewallRule -DisplayGroup "Remote Desktop" | Out-Null
 Ok "RDP enabled with NLA, firewall opened"
+
+# --- 6. Static routes --------------------------------------------------------
+Step "Configuring static routes"
+foreach ($route in $StaticRoutes) {
+    Ensure-StaticRoute -DestinationPrefix $route.DestinationPrefix -NextHop $route.NextHop
+}
 
 # --- 7. Disabling unused features ---------------------------------------------
 Step "Configuring Windows features"

@@ -6,8 +6,9 @@ Personal Windows VDI configuration as code. Installs apps, configures Git and SS
 
 - **`setup.ps1`** — entry point; idempotent, re-run any time to update apps or reapply config
 	- Configures only the `Joel` profile
+	- Applies persistent static routes for `10.10.10.0/24` via `192.168.0.210` and `10.10.20.0/24` via `192.168.0.220`
 - **`apps/packages.json`** — winget package list
-- **`git/gitconfig`** — global Git configuration (`~/.gitconfig`)
+- **`git/gitconfig`** — Git configuration (`~/.gitconfig`)
 - **`ssh/config`** — SSH host aliases (`~/.ssh/config`)
 
 SSH private key is managed manually and left in place at `~/.ssh/id_ed25519`.

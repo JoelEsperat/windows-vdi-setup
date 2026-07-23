@@ -1,41 +1,30 @@
-Host pi
-   HostName 192.168.0.200
-   User joel
-   Port 22
-   IdentityFile ~/.ssh/id_ed25519
-
 Host pve
-   HostName 192.168.0.210
+   HostName 192.168.0.200
    User root
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
 Host pbs
-   HostName 192.168.1.10
+   HostName 192.168.0.201
    User root
-   Port 22
-   IdentityFile ~/.ssh/id_ed25519
-
-Host gw
-   HostName 192.168.0.211
-   User root
-   Port 22
-   IdentityFile ~/.ssh/id_ed25519
-
-Host nas
-   HostName 192.168.0.212
-   User joel
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
 Host apps
-   HostName 192.168.0.213
+   HostName 192.168.0.202
    User root
    Port 22
    IdentityFile ~/.ssh/id_ed25519
 
-Host lab
-   HostName 192.168.0.220
-   User joel
+Host pve-01
+   HostName 192.168.0.210
+   User root
    Port 22
    IdentityFile ~/.ssh/id_ed25519
+
+Host pve-02
+   HostName 192.168.0.220
+   User root
+   Port 22
+   IdentityFile ~/.ssh/id_ed25519
+
